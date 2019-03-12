@@ -1,0 +1,14 @@
+{
+  "name": "bluetoothsdk",
+  "version": "1.0.0",
+  "description": "A bluetooth sdk to create wifi!",
+  "cordova": {
+    "id": "com.jieweifu.bluetoothSDK",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "author": "moneyinto",
+  "license": "ISC"
+}
