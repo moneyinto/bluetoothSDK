@@ -18,10 +18,26 @@
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="bluetoothSDK">
-            <param name="android-package" value="com.jieweifu.bluetoothSDK.bluetoothSDK" />
-        </feature>
+                <param name="android-package" value="com.jieweifu.bluetoothSDK" />
+            </feature>
         </config-file>
-        <config-file parent="/*" target="AndroidManifest.xml"></config-file>
-        <source-file src="src/android/bluetoothSDK.java" target-dir="src/com/jieweifu/bluetoothSDK/bluetoothSDK" />
+        <config-file parent="/manifest" mode="merge" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.BLUETOOTH" />
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+            <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <!-- SDCard中创建与删除文件权限 -->
+            <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+            <!-- 向SDCard写入数据权限 -->
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.INTERNET" />
+        </config-file>
+
+        <lib-file src="src/android/libs/log4j-1.2.17.jar" target-dir="libs" framework="true" />
+        <lib-file src="src/android/libs/pl_sigmesh.jar" target-dir="libs" framework="true" />
+        <source-file src="src/android/libs/armeabi-v7a/libnative-lib.so" target-dir="libs/armeabi" />
+        <source-file src="src/android/bluetoothSDK.java" target-dir="src/com/jieweifu/bluetoothSDK" />
     </platform>
 </plugin>
