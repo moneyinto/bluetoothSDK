@@ -2,7 +2,7 @@
 <plugin id="com.jieweifu.bluetoothSDK" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>bluetoothSDK</name>
     <js-module name="BluetoothSDK" src="www/bluetoothSDK.js">
-        <clobbers target="cordova.plugins.bluetoothSDK" />
+        <clobbers target="bluetoothSDK" />
     </js-module>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
@@ -17,8 +17,8 @@
 
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="bluetoothSDK">
-                <param name="android-package" value="com.jieweifu.bluetoothSDK" />
+            <feature name="BluetoothSDK">
+                <param name="android-package" value="com.jieweifu.bluetoothSDK.BluetoothSDK" />
             </feature>
         </config-file>
         <config-file parent="/manifest" mode="merge" target="AndroidManifest.xml">
@@ -35,9 +35,14 @@
             <uses-permission android:name="android.permission.INTERNET" />
         </config-file>
 
-        <lib-file src="src/android/libs/log4j-1.2.17.jar" target-dir="libs" framework="true" />
-        <lib-file src="src/android/libs/pl_sigmesh.jar" target-dir="libs" framework="true" />
+        <config-file parent="/manifest/application" mode="merge" target="AndroidManifest.xml">
+            <service android:name="com.pairlink.sigmesh.lib.PlSigMeshService"></service>
+        </config-file>
+
+        <lib-file src="src/android/libs/log4j-1.2.17.jar" />
+        <lib-file src="src/android/libs/pl_sigmesh.jar" />
         <source-file src="src/android/libs/armeabi-v7a/libnative-lib.so" target-dir="libs/armeabi" />
-        <source-file src="src/android/bluetoothSDK.java" target-dir="src/com/jieweifu/bluetoothSDK" />
+        <source-file src="src/android/BluetoothSDK.java" target-dir="src/com/jieweifu/bluetoothSDK" />
+        <framework src="com.google.code.gson:gson:2.2.4" />
     </platform>
 </plugin>
