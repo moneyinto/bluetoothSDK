@@ -38,6 +38,10 @@ public class BluetoothSDK extends CordovaPlugin {
 
     private CallbackContext registerScanDevicesCallback;
 
+    private CallbackContext unbindDeviceCallback;
+
+    private CallbackContext bindDeviceProgressCallback;
+
     private List<BluetoothDevice> devices = new ArrayList<>();
 
     private static int REQUEST_CODE = 10000;
@@ -86,6 +90,44 @@ public class BluetoothSDK extends CordovaPlugin {
         public void onNodeResetStatus(final short src){
             // 删除解绑回调 强制删除配置文件
             mService.delMeshNode(src);
+            unbindDeviceCallback.success(src);
+        }
+
+        @Override
+        public void onConfigComplete(int result, MeshNetInfo.MeshNodeInfo config_node, MeshNetInfo mesh){
+            if(result != Util.PL_EVT_CONFIG_SUCCESS) {
+                String tmp = "";
+                if(result == Util.PL_EVT_CONFIG_ERR_CID_PID) {
+                    tmp = "ERR CID PID";
+                }
+                else if(result == Util.PL_EVT_CONFIG_ERR_MODELID_MISMATCH) {
+                    tmp = "ERR MODEL";
+                }
+                else if(result == Util.PL_EVT_CONFIG_ERR_MODELID_MISMATCH) {
+                    tmp = "ERR Connection";
+                }
+                Log.d("DDD_CONFIG_ERR", "------------------");
+                return;
+            }
+
+            final String addr = config_node.uuid;
+
+            if(Util.CONFIG_MODE_PROVISION_CONFIG_ONE_BY_ONE == mService.get_config_mode()) {
+                Log.d("DDD_1", "---------------");
+                // 配置完成
+            }
+
+            if(Util.CONFIG_MODE_PROVISION_ONE_BY_ONE == mService.get_config_mode()) {
+                Log.d("DDD_2", "---------------");
+            }
+
+            try {
+                JSONObject response = new JSONObject();
+                response.put("progress", 100);
+                bindDeviceProgressCallback.success(response);
+            } catch (Exception e) {
+                Log.e("", e.toString());
+            }
         }
     };
 
@@ -130,15 +172,26 @@ public class BluetoothSDK extends CordovaPlugin {
         }
 
         @Override
-        public void onProvisionComplete(int result, MeshNetInfo.MeshNodeInfo provision_node, MeshNetInfo mesh){
+        public void onProvisionComplete(int result, MeshNetInfo.MeshNodeInfo provision_node, MeshNetInfo mesh) {
             Log.d("BBB", "onProvisionComplete " + result);
             Log.d("BBB", "onProvisionComplete " + provision_node);
             Log.d("BBB", "onProvisionComplete " + mesh);
+
             if(Util.CONFIG_MODE_PROVISION_ONE_BY_ONE == mService.get_config_mode()) {
 
             }
-            else if(Util.CONFIG_MODE_PROVISION_CONFIG_ONE_BY_ONE == mService.get_config_mode()){
+            if(Util.CONFIG_MODE_PROVISION_CONFIG_ONE_BY_ONE == mService.get_config_mode()){
 
+            }
+            // 配置完成50%
+            try {
+                JSONObject response = new JSONObject();
+                response.put("progress", 50);
+                PluginResult progress = new PluginResult(PluginResult.Status.OK, response);
+                progress.setKeepCallback(true);
+                bindDeviceProgressCallback.sendPluginResult(progress);
+            } catch (Exception e) {
+                Log.e("", e.toString());
             }
         }
 
@@ -293,6 +346,7 @@ public class BluetoothSDK extends CordovaPlugin {
                 byte[] info = Util.hexStringToBytes(device.getString("uuid"));
                 byte ele_num = info[15];
                 mService.startProvision(Unporvisioned_Dev, ele_num);
+                bindDeviceProgressCallback = callbackContext;
                 return;
             }
         }
@@ -324,7 +378,7 @@ public class BluetoothSDK extends CordovaPlugin {
     void deleteDevice(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         int addr = args.getInt(0);
         mService.resetNode((short)addr);
-        callbackContext.success();
+        unbindDeviceCallback = callbackContext;
     }
 
     // 强制解绑删除设备
@@ -332,5 +386,10 @@ public class BluetoothSDK extends CordovaPlugin {
         int addr = args.getInt(0);
         mService.delMeshNode((short)addr);
         callbackContext.success();
+    }
+
+    // 发送命令
+    void sendCommand(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+
     }
 }
