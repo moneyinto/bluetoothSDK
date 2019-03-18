@@ -76,8 +76,24 @@ BluetoothSDK.prototype.unRegisterAddProgress = function (successCallback, errorC
     this.callNative('unRegisterAddProgress', [], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.sendCommand = function (command, successCallback, errorCallback) {
-    this.callNative('sendCommand', [command], successCallback, errorCallback);
+BluetoothSDK.prototype.sendCommand = function (index, command, successCallback, errorCallback) {
+    this.callNative('sendCommand', [index, command], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.proxyJoin = function (successCallback, errorCallback) {
+    this.callNative('proxyJoin', [], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.proxyExit = function (successCallback, errorCallback) {
+    this.callNative('proxyExit', [], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.onLight = function (addr, successCallback, errorCallback) {
+    this.callNative('onLight', [addr], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.offLight = function (addr, successCallback, errorCallback) {
+    this.callNative('offLight', [addr], successCallback, errorCallback);
 }
 
 if (!window.BluetoothSDK) {
