@@ -6,9 +6,12 @@
     </js-module>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
-        <feature name="BluetoothSDK">
-            <param name="ios-package" value="BluetoothSDK" />
-        </feature>
+            <feature name="BluetoothSDK">
+                <param name="ios-package" value="BluetoothSDK" />
+            </feature>
+        </config-file>
+        <config-file target="*-Info.plist" parent="NSBluetoothPeripheralUsageDescription">
+            <string>App需要您的同意,才能访问蓝牙</string>
         </config-file>
         <header-file src="src/ios/BluetoothSDK.h"/>
         <source-file src="src/ios/BluetoothSDK.m" />

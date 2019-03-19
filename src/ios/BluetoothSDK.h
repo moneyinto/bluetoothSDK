@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface BluetoothSDK : CDVPlugin <PLSigMeshProxyCallback, PLSigMeshProvisionCallback> {
     CDVInvokedUrlCommand *RegisterWifiCommand;
     CDVInvokedUrlCommand *AddDeviceCommand;
+    CDVInvokedUrlCommand *ProxyJoinCommand;
+    NSArray *netWifiList;
 }
-
-@property (nonatomic, assign) int device_addr;
 
 @end
 
