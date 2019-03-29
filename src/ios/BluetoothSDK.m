@@ -119,14 +119,14 @@
     Byte info[18] = {0};
     [BleUtil hexStr2Byte:uuid data:info];
     [[PLSigMeshService getInstance] startProvision:uuid ele_num:info[15]];
-    [self callback:command response:nil];
+    AddDeviceCommand = command;
 }
 
 // 注册添加设备进程监听
 - (void)registerAddProgress:(CDVInvokedUrlCommand*)command
 {
     [[PLSigMeshProxy getInstance]register_proxy_callback:self];
-    AddDeviceCommand = command;
+    [self callback:command response:nil];
 }
 
 // 取消注册添加设备进程监听
@@ -174,7 +174,7 @@
             break;
     }
     
-    NSDictionary *response = @{@"info": info, @"value": value};
+    NSDictionary *response = @{@"info": info, @"progress": value};
     [self keepCallback:AddDeviceCommand response:response];
 }
 
