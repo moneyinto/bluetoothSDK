@@ -52,14 +52,14 @@
     NSArray *netIds = [NSArray arrayWithArray:[[PLSigMeshService getInstance] getMeshList]];
     netWifiList = netIds;
     NSMutableArray *tmp_mesh_list = [NSMutableArray array];
-    
+
     for (MeshNetInfo* item in netIds) {
         NSDictionary *netId = @{@"name": item.name, @"time": item.current_admin, @"appKey": item.appkey, @"netKey": item.netkey, @"uuid": item.current_admin};
         [tmp_mesh_list addObject:netId];
     };
-    
+
     NSDictionary *response = @{@"netIds": tmp_mesh_list, @"success": @true};
-    
+
     [self callback:command response:response];
 }
 
@@ -99,9 +99,9 @@
         NSDictionary *device = @{@"name": item.name, @"address": item.btAddr, @"uuid": item.uuid};
         [devices addObject:device];
     }
-    
+
     NSDictionary *response = @{@"devices": devices};
-    
+
     [self keepCallback:RegisterWifiCommand response:response];
 }
 
@@ -119,14 +119,14 @@
     Byte info[18] = {0};
     [BleUtil hexStr2Byte:uuid data:info];
     [[PLSigMeshService getInstance] startProvision:uuid ele_num:info[15]];
-    [self callback:command response:nil];
+    AddDeviceCommand = command;
 }
 
 // 注册添加设备进程监听
 - (void)registerAddProgress:(CDVInvokedUrlCommand*)command
 {
     [[PLSigMeshProxy getInstance]register_proxy_callback:self];
-    AddDeviceCommand = command;
+    [self callback:command response:nil];
 }
 
 // 取消注册添加设备进程监听
@@ -173,8 +173,8 @@
         default:
             break;
     }
-    
-    NSDictionary *response = @{@"info": info, @"value": value};
+
+    NSDictionary *response = @{@"progress": value};
     [self keepCallback:AddDeviceCommand response:response];
 }
 
@@ -198,7 +198,7 @@
     NSString *n = [command.arguments objectAtIndex:0];
     short addr = [n intValue];
     [[PLSigMeshService getInstance] resetNode:addr];
-    [self callback:command response:nil];
+    [self callback:command response:@{@"addr": n}];
 }
 
 // 强制删除设备

@@ -96,6 +96,18 @@ BluetoothSDK.prototype.offLight = function (addr, successCallback, errorCallback
     this.callNative('offLight', [addr], successCallback, errorCallback);
 }
 
+BluetoothSDK.prototype.getWifiJson = function (addr, successCallback, errorCallback) {
+    this.callNative('getWifiJson', [addr], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.updateWifiJson = function (json, successCallback, errorCallback) {
+    this.callNative('updateWifiJson', [json], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.wifiListener = function (successCallback, errorCallback) {
+    this.callNative('wifiListener', [], successCallback, errorCallback);
+}
+
 if (!window.BluetoothSDK) {
   window.BluetoothSDK = new BluetoothSDK();
 }
