@@ -174,7 +174,7 @@
             break;
     }
 
-    NSDictionary *response = @{@"progress": value};
+    NSDictionary *response = @{@"info": info, @"progress": value};
     [self keepCallback:AddDeviceCommand response:response];
 }
 
