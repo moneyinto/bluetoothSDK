@@ -14,9 +14,12 @@
 
 @interface AdminNodeInfo : NSObject
 
-@property (nonatomic, copy) NSString *name;
-@property (nonatomic, copy) NSString *uuid;
 @property (nonatomic, assign) int addr;
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, assign) short node_next_addr;
+@property (nonatomic, assign) int provision_end_addr; // <502
+@property (nonatomic, assign) int provision_start_addr; // >=2
+@property (nonatomic, copy) NSString *uuid;
 
 @end
 

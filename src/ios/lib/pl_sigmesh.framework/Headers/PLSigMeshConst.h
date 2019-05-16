@@ -33,7 +33,12 @@
 #define PL_SEND_NO_SERVICE 			6
 #define PL_MESH_NET_NULL 			7 
 #define PL_MESH_NET_JOIN_STATE_ERR 	8 
-
+#define PL_RELIABLE_LIST_NOT_NULL  	9 
+#define PL_UUID_NOT_FOUND 			10
+#define PL_PROVISION_ADDR_RUNOUT 	11
+#define PL_TARGET_NODE_NOT_FOUND 	12
+#define PL_ERR  					0xffffffff
+	
 #define SCAN_TYPE_PROXY 	0
 #define SCAN_TYPE_PROVISION 1
 
@@ -118,6 +123,29 @@
 #define PL_OP_SIG_GENERIC_PWRLEVEL_GET_LAST 	(short) 0x8219
 #define PL_OP_SIG_GENERIC_PWRLEVEL_GET_DEFAULT 	(short) 0x821b
 
+//lightness
+#define PL_OP_SIG_LIGHT_LIGHTNESS_GET 			(short) 0x824b
+#define PL_OP_SIG_LIGHT_LIGHTNESS_SET 			(short) 0x824c
+#define PL_OP_SIG_LIGHT_LIGHTNESS_SET_UNACKED 	(short) 0x824d
+#define PL_OP_SIG_LIGHT_LIGHTNESS_STATUS 		(short) 0x824e
+
+//Light CTL
+#define PL_LIGHT_CTL_TEMPERATURE_MIN 			(short) 0x0320
+#define PL_LIGHT_CTL_TEMPERATURE_MAX 			(short) 0x4E20
+
+#define PL_OP_SIG_LIGHT_CTL_GET 				(short) 0x825d
+#define PL_OP_SIG_LIGHT_CTL_SET 				(short) 0x825e
+#define PL_OP_SIG_LIGHT_CTL_SET_UNACKED 		(short) 0x825f
+#define PL_OP_SIG_LIGHT_CTL_STATUS 				(short) 0x8260
+
+#define PL_OP_SIG_LIGHT_CTL_TEMPERATURE_GET		(short) 0x8261
+
+//Light HSL
+#define PL_OP_SIG_LIGHT_HSL_GET 				(short) 0x826d
+#define PL_OP_SIG_LIGHT_HSL_SET 				(short) 0x8276
+#define PL_OP_SIG_LIGHT_HSL_SET_UNACKED 		(short) 0x8277
+#define PL_OP_SIG_LIGHT_HSL_STATUS 				(short) 0x8278
+	
     //time
 #define PL_OP_SIG_TIME_GET (short) 		0x8237
 #define PL_OP_SIG_TIME_SET (short) 		0x5c
@@ -216,5 +244,7 @@
 #define SEND_DEFAULT_DELAY 10
 #define SEND_CONFIG_DELAY 150
 
-
+#define PROVISION_DEFAULT_START_ADDR  2
+#define PROVISION_NUM_LIMIT_WITHOUT_QUERY_SERVER  500
+	
 #endif /* PLSigMeshConst_h */

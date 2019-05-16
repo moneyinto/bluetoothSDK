@@ -13,7 +13,7 @@
     [super pluginInitialize];
     RegisterWifiCommand = nil;
     AddDeviceCommand = nil;
-    ProxyJoinCommand = nil;
+    MeshListenerCommand = nil;
     netWifiList = @[];
 }
 
@@ -52,14 +52,14 @@
     NSArray *netIds = [NSArray arrayWithArray:[[PLSigMeshService getInstance] getMeshList]];
     netWifiList = netIds;
     NSMutableArray *tmp_mesh_list = [NSMutableArray array];
-
+    
     for (MeshNetInfo* item in netIds) {
-        NSDictionary *netId = @{@"name": item.name, @"time": item.current_admin, @"appKey": item.appkey, @"netKey": item.netkey, @"uuid": item.current_admin};
+        NSDictionary *netId = @{@"name": item.name, @"appKey": item.appkey, @"netKey": item.netkey};
         [tmp_mesh_list addObject:netId];
     };
-
+    
     NSDictionary *response = @{@"netIds": tmp_mesh_list, @"success": @true};
-
+    
     [self callback:command response:response];
 }
 
@@ -99,9 +99,9 @@
         NSDictionary *device = @{@"name": item.name, @"address": item.btAddr, @"uuid": item.uuid};
         [devices addObject:device];
     }
-
+    
     NSDictionary *response = @{@"devices": devices};
-
+    
     [self keepCallback:RegisterWifiCommand response:response];
 }
 
@@ -173,7 +173,7 @@
         default:
             break;
     }
-
+    
     NSDictionary *response = @{@"info": info, @"progress": value};
     [self keepCallback:AddDeviceCommand response:response];
 }
@@ -198,7 +198,7 @@
     NSString *n = [command.arguments objectAtIndex:0];
     short addr = [n intValue];
     [[PLSigMeshService getInstance] resetNode:addr];
-    [self callback:command response:@{@"addr": n}];
+    [self callback:command response:nil];
 }
 
 // 强制删除设备
@@ -214,7 +214,6 @@
 - (void)proxyJoin:(CDVInvokedUrlCommand*)command
 {
     [[PLSigMeshService getInstance]proxyJoin];
-    // ProxyJoinCommand = command;
     [self callback:command response:nil];
 }
 
@@ -231,14 +230,16 @@
     switch (status) {
         case PL_MESH_EXIT:
             NSLog(@"-----------------");
-            [[PLSigMeshService getInstance]proxyJoin];
+//            [[PLSigMeshService getInstance]proxyJoin];
+            [self keepCallback:MeshListenerCommand response:@{@"status": @2}];
             break;
         case PL_MESH_JOINING:
             // joining
+            [self keepCallback:MeshListenerCommand response:@{@"status": @1}];
             break;
         case PL_MESH_JOINED:
             // join ok
-            // [self callback:ProxyJoinCommand response:nil];
+            [self keepCallback:MeshListenerCommand response:@{@"status": @0}];
             break;
         default:
             break;
@@ -276,6 +277,27 @@
     }
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)getWifiJson:(CDVInvokedUrlCommand*)command
+{
+    NSString *n = [command.arguments objectAtIndex:0];
+    int index = [n intValue];
+    NSString *jsonString = [[PLSigMeshService getInstance] getJsonStrMeshNet:index];
+    [self callback:command response:@{@"json": jsonString}];
+}
+
+- (void)updateWifiJson:(CDVInvokedUrlCommand*)command
+{
+    NSString *JsonString = [command.arguments objectAtIndex:0];
+    [[PLSigMeshService getInstance] updateJsonStrMeshNet:JsonString];
+    [self callback:command response:nil];
+}
+
+// 网络设备监听回调
+- (void)wifiListener:(CDVInvokedUrlCommand*)command
+{
+    MeshListenerCommand = command;
 }
 
 -(void)callback:(CDVInvokedUrlCommand *) command response:(NSDictionary *) response

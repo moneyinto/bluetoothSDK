@@ -108,6 +108,10 @@ BluetoothSDK.prototype.wifiListener = function (successCallback, errorCallback) 
     this.callNative('wifiListener', [], successCallback, errorCallback);
 }
 
+BluetoothSDK.prototype.isEnabled = function (successCallback, errorCallback) {
+    this.callNative('isEnabled', [], successCallback, errorCallback);
+}
+
 if (!window.BluetoothSDK) {
   window.BluetoothSDK = new BluetoothSDK();
 }

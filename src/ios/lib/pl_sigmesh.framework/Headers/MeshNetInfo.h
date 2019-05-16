@@ -24,18 +24,18 @@
 
 @interface MeshNetInfo : NSObject
 
-@property (nonatomic, copy) NSString *netkey;
-@property (nonatomic, copy) NSString *appkey;
-@property (nonatomic, assign) int   iv_index;
-@property (nonatomic, assign) short node_next_addr;
 @property (nonatomic, assign) short admin_next_addr;
-@property (nonatomic, assign) int   mesh_version;
-@property (nonatomic, assign) BOOL   gateway;
-@property (nonatomic, assign) int   seq;
-@property (nonatomic, copy) NSString *name;
-@property (nonatomic, copy) NSString *current_admin;
 @property (nonatomic, strong) NSMutableArray *admin_nodes;
+@property (nonatomic, copy) NSString *appkey;
+@property (nonatomic, assign) BOOL   gateway;
+@property (nonatomic, assign) int   iv_index;
+@property (nonatomic, assign) int   mesh_version;
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, copy) NSString *netkey;
+@property (nonatomic, assign) short node_next_addr;
 @property (nonatomic, strong) NSMutableArray *nodes;
+@property (nonatomic, assign) int   seq;
+//@property (nonatomic, copy) NSString *current_admin;
 
 +(instancetype)initWithInfo:(NSString *)netKey appKey:(NSString *) appKey;
 

@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface BluetoothSDK : CDVPlugin <PLSigMeshProxyCallback, PLSigMeshProvisionCallback> {
     CDVInvokedUrlCommand *RegisterWifiCommand;
     CDVInvokedUrlCommand *AddDeviceCommand;
-    CDVInvokedUrlCommand *ProxyJoinCommand;
+    CDVInvokedUrlCommand *MeshListenerCommand;
     NSArray *netWifiList;
 }
 

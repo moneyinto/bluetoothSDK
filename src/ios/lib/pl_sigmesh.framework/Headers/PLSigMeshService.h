@@ -87,5 +87,9 @@
 -(BOOL)addAdminNode:(NSString *)fileName;
 -(NSString *)getIPAddress;
 -(void)test;
+@property (nonatomic, assign) int admin_index;
+@property (nonatomic, copy) NSString *current_admin;
+-(NSString *)getJsonStrMeshNet:(int)index;
+-(int)updateJsonStrMeshNet:(NSString *)meshinfo;
 
 @end
