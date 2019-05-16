@@ -39,11 +39,11 @@
         </config-file>
 
         <config-file parent="/manifest/application" mode="merge" target="AndroidManifest.xml">
-            <service android:name="com.pairlink.sigmesh.lib.PlSigMeshService"></service>
+            <service android:enabled="true" android:name="com.pairlink.connectedmesh.lib.MeshService"></service>
         </config-file>
 
         <lib-file src="src/android/libs/log4j-1.2.17.jar" />
-        <lib-file src="src/android/libs/pl_sigmesh.jar" />
+        <lib-file src="src/android/libs/pl_connectedmesh.jar" />
         <source-file src="src/android/libs/armeabi-v7a/libnative-lib.so" target-dir="libs/armeabi" />
         <source-file src="src/android/BluetoothSDK.java" target-dir="src/com/jieweifu/bluetoothSDK" />
         <framework src="com.google.code.gson:gson:2.2.4" />

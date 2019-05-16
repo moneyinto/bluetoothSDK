@@ -24,88 +24,56 @@ BluetoothSDK.prototype.destroy = function (successCallback, errorCallback) {
     this.callNative('destroy', [], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.createWifi = function (wifi, successCallback, errorCallback) {
-    this.callNative('createWifi', [wifi], successCallback, errorCallback);
+BluetoothSDK.prototype.createOrLoginWifi = function (wifi, password, successCallback, errorCallback) {
+    this.callNative('createOrLoginWifi', [wifi, password], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.scanWifi = function (isEnable, successCallback, errorCallback) {
+    this.callNative('scanWifi', [isEnable], successCallback, errorCallback);
 }
 
 BluetoothSDK.prototype.getWifiNetIds = function (successCallback, errorCallback) {
     this.callNative('getWifiNetIds', [], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.deleteWifiNetId = function (index, successCallback, errorCallback) {
-    this.callNative('deleteWifiNetId', [index], successCallback, errorCallback);
+BluetoothSDK.prototype.joinMesh = function (successCallback, errorCallback) {
+    this.callNative('joinMesh', [], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.chooseWifiNetId = function (index, successCallback, errorCallback) {
-    this.callNative('chooseWifiNetId', [index], successCallback, errorCallback);
+BluetoothSDK.prototype.exitMesh = function (successCallback, errorCallback) {
+    this.callNative('exitMesh', [], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.registerScanDevices = function (successCallback, errorCallback) {
-    this.callNative('registerScanDevices', [], successCallback, errorCallback);
+BluetoothSDK.prototype.pingMesh = function (successCallback, errorCallback) {
+    this.callNative('pingMesh', [], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.unRegisterScanDevices = function (successCallback, errorCallback) {
-    this.callNative('unRegisterScanDevices', [], successCallback, errorCallback);
+BluetoothSDK.prototype.listenerWifiJoinStatus = function (successCallback, errorCallback) {
+    this.callNative('listenerWifiJoinStatus', [], successCallback, errorCallback);
+}
+
+BluetoothSDK.prototype.getWifiDeviceList = function (successCallback, errorCallback) {
+    this.callNative('getWifiDeviceList', [], successCallback, errorCallback);
 }
 
 BluetoothSDK.prototype.scanDevice = function (isEnable, successCallback, errorCallback) {
     this.callNative('scanDevice', [isEnable], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.addDevice = function (device, successCallback, errorCallback) {
-    this.callNative('addDevice', [device], successCallback, errorCallback);
+BluetoothSDK.prototype.addDevice = function (btAddr, successCallback, errorCallback) {
+    this.callNative('addDevice', [btAddr], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.getDeviceList = function (index, successCallback, errorCallback) {
-    this.callNative('getDeviceList', [index], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.deleteDevice = function (addr, successCallback, errorCallback) {
-    this.callNative('deleteDevice', [addr], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.forceDeleteDevice = function (addr, successCallback, errorCallback) {
-    this.callNative('forceDeleteDevice', [addr], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.registerAddProgress = function (successCallback, errorCallback) {
-    this.callNative('registerAddProgress', [], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.unRegisterAddProgress = function (successCallback, errorCallback) {
-    this.callNative('unRegisterAddProgress', [], successCallback, errorCallback);
+BluetoothSDK.prototype.deleteDevice = function (index, successCallback, errorCallback) {
+    this.callNative('deleteDevice', [index], successCallback, errorCallback);
 }
 
 BluetoothSDK.prototype.sendCommand = function (index, command, successCallback, errorCallback) {
     this.callNative('sendCommand', [index, command], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.proxyJoin = function (successCallback, errorCallback) {
-    this.callNative('proxyJoin', [], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.proxyExit = function (successCallback, errorCallback) {
-    this.callNative('proxyExit', [], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.onLight = function (addr, successCallback, errorCallback) {
-    this.callNative('onLight', [addr], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.offLight = function (addr, successCallback, errorCallback) {
-    this.callNative('offLight', [addr], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.getWifiJson = function (addr, successCallback, errorCallback) {
-    this.callNative('getWifiJson', [addr], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.updateWifiJson = function (json, successCallback, errorCallback) {
-    this.callNative('updateWifiJson', [json], successCallback, errorCallback);
-}
-
-BluetoothSDK.prototype.wifiListener = function (successCallback, errorCallback) {
-    this.callNative('wifiListener', [], successCallback, errorCallback);
+BluetoothSDK.prototype.rename = function (index, name, successCallback, errorCallback) {
+    this.callNative('rename', [index, name], successCallback, errorCallback);
 }
 
 if (!window.BluetoothSDK) {
