@@ -68,12 +68,12 @@ BluetoothSDK.prototype.deleteDevice = function (index, successCallback, errorCal
     this.callNative('deleteDevice', [index], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.sendCommand = function (index, command, successCallback, errorCallback) {
-    this.callNative('sendCommand', [index, command], successCallback, errorCallback);
+BluetoothSDK.prototype.sendCommand = function (btAddr, command, successCallback, errorCallback) {
+    this.callNative('sendCommand', [btAddr, command], successCallback, errorCallback);
 }
 
-BluetoothSDK.prototype.rename = function (index, name, successCallback, errorCallback) {
-    this.callNative('rename', [index, name], successCallback, errorCallback);
+BluetoothSDK.prototype.rename = function (btAddr, name, successCallback, errorCallback) {
+    this.callNative('rename', [btAddr, name], successCallback, errorCallback);
 }
 
 if (!window.BluetoothSDK) {
