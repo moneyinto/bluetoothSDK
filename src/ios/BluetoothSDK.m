@@ -12,270 +12,283 @@
 - (void)pluginInitialize {
     [super pluginInitialize];
     RegisterWifiCommand = nil;
+    ListenerWifiJoinStatusCommand = nil;
+    ScanDeviceCommand = nil;
     AddDeviceCommand = nil;
-    ProxyJoinCommand = nil;
-    netWifiList = @[];
+    DeleteDeviceCommand = nil;
+    ScanDeviceList = [NSMutableArray array];
 }
 
-// 创建蓝牙网络
-- (void)createWifi:(CDVInvokedUrlCommand*)command
-{
-    NSString* wifi = [command.arguments objectAtIndex:0];
-
-    NSString *netKey = [wifi substringToIndex:4];
-    NSString *appKey = [wifi substringFromIndex:4];
-
-    MeshNetInfo *meshNetInfo = [MeshNetInfo initWithInfo:netKey appKey:appKey];
-    [[PLSigMeshService getInstance] addMeshNet:meshNetInfo];
-
-    [[PLSigMeshService getInstance] send_notify_message:NOTIFY_REFRESH_NET_LIST data:nil];
-    // if (echo != nil && [echo length] > 0) {
-    //     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
-    // } else {
-    //     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-    // }
-    [self callback:command response:nil];
-}
-
-// 删除蓝牙网络
-- (void)deleteWifiNetId:(CDVInvokedUrlCommand*)command
-{
-    NSString *index = [command.arguments objectAtIndex:0];
-    int n = [index intValue];
-    MeshNetInfo *_mesh_net = [netWifiList objectAtIndex:n];
-    [[PLSigMeshService getInstance] delMeshNet:_mesh_net.name];
-}
-
-// 获取蓝牙网络id
-- (void)getWifiNetIds:(CDVInvokedUrlCommand*)command
-{
-    NSArray *netIds = [NSArray arrayWithArray:[[PLSigMeshService getInstance] getMeshList]];
-    netWifiList = netIds;
-    NSMutableArray *tmp_mesh_list = [NSMutableArray array];
-
-    for (MeshNetInfo* item in netIds) {
-        NSDictionary *netId = @{@"name": item.name, @"time": item.current_admin, @"appKey": item.appkey, @"netKey": item.netkey, @"uuid": item.current_admin};
-        [tmp_mesh_list addObject:netId];
-    };
-
-    NSDictionary *response = @{@"netIds": tmp_mesh_list, @"success": @true};
-
-    [self callback:command response:response];
-}
-
-// 选择蓝牙网络
-- (void)chooseWifiNetId:(CDVInvokedUrlCommand*)command
-{
-    NSString *index = [command.arguments objectAtIndex:0];
-    int n = [index intValue];
-    MeshNetInfo *_mesh_net = [netWifiList objectAtIndex:n];
-    [[PLSigMeshService getInstance] chooseMeshNet:_mesh_net];
-    [self callback:command response:nil];
-
-}
-
-// 注册获取蓝牙设备监听
-- (void)registerScanDevices:(CDVInvokedUrlCommand*)command
-{
-    [[PLSigMeshProvisionClient getInstance] register_provision_callback:self];
-    RegisterWifiCommand = command;
-}
-
-// 取消注册获取蓝牙设备监听
-- (void)unRegisterScanDevices:(CDVInvokedUrlCommand*)command
-{
-    RegisterWifiCommand = nil;
-    [[PLSigMeshProvisionClient getInstance] unregister_provision_callback:self];
-    [self callback:command response:nil];
-}
-
-// 注册获取蓝牙设备回调
-- (void)onDeviceFoundUnprovisioned:(NSString *)uuid btAddr:(NSString *)btAddr rssi:(int)rssi{
-    NSLog(@"onDeviceFoundUnprovisioned uuid: %@, btAddr: %@, rssi: %d", uuid, btAddr, rssi);
-
-    NSArray *data = [[BLEDeviceManager getInstance]API_DB_device_get_items:TABLE_DEVICE_PROVISION uuid:nil];
-    NSMutableArray *devices = [NSMutableArray array];
-    for (PLDevice* item in data) {
-        NSDictionary *device = @{@"name": item.name, @"address": item.btAddr, @"uuid": item.uuid};
-        [devices addObject:device];
+// wifi监听回调
+-(void)on_homeId_found:(NSString *)homeId{
+    NSLog(@"=== on_homeId_found: %@", homeId);
+    NSArray* wifiList = [[MeshService getInstance] API_DB_mesh_get_list:NO];
+    for (int i=0; i<[wifiList count]; i++) {
+        TPMesh* wifi = [wifiList objectAtIndex:i];
+        if (wifi.homeId == homeId) {
+            NSDictionary *response = @{@"wifiId": homeId, @"wifiName": wifi.meshName};
+            [self keepCallback:RegisterWifiCommand response:response];
+        }
     }
-
-    NSDictionary *response = @{@"devices": devices};
-
-    [self keepCallback:RegisterWifiCommand response:response];
 }
 
-// 开始扫描蓝牙设备
-- (void)scanDevice:(CDVInvokedUrlCommand*)command
-{
-    [[BLEDeviceManager getInstance]API_start_scan];
-    [self callback:command response:nil];
+-(void)on_device_num_changed:(int)current all:(int)all{
+    NSLog(@"on_device_num_changed: %02d/%02d", current, all);
+    
+    if(current == all){
+        NSDictionary *response = @{@"status": @8};
+        [self keepCallback:ListenerWifiJoinStatusCommand response:response];
+    }
 }
 
-// 添加蓝牙设备到网络
-- (void)addDevice:(CDVInvokedUrlCommand*)command
-{
-    NSString *uuid = [command.arguments objectAtIndex:0];
-    Byte info[18] = {0};
-    [BleUtil hexStr2Byte:uuid data:info];
-    [[PLSigMeshService getInstance] startProvision:uuid ele_num:info[15]];
-    AddDeviceCommand = command;
+-(void)on_connection_state_changed:(BOOL)state{
+    NSLog(@"on_connection_state_changed: %d", state);
+    NSDictionary *response = nil;
+    if (state) {
+        response = @{@"status": @3};
+    } else {
+        response = @{@"status": @5};
+    }
+    [self keepCallback:ListenerWifiJoinStatusCommand response:response];
 }
 
-// 注册添加设备进程监听
-- (void)registerAddProgress:(CDVInvokedUrlCommand*)command
-{
-    [[PLSigMeshProxy getInstance]register_proxy_callback:self];
-    [self callback:command response:nil];
+-(void)on_update_device_list{
+    NSLog(@"on_update_device_list");
+//    if([[MeshService getInstance] API_get_connection_status]){
+//        [self loadDevList];
+//    }
+    [self keepCallback:ListenerWifiJoinStatusCommand response:@{@"status": @8}];
 }
 
-// 取消注册添加设备进程监听
-- (void)unRegisterAddProgress:(CDVInvokedUrlCommand*)command
-{
-    AddDeviceCommand = nil;
-    [[PLSigMeshProxy getInstance]unregister_proxy_callback:self];
-    [self callback:command response:nil];
+-(void)onGroupStatus:(Byte)srcType addr:(Byte *)addr status:(Byte)status groupId:(Byte)groupId deviceBean:(DeviceBean *)deviceBean{
+    NSLog(@"onGroupStatus scrType: %d, addr: %@, status: %d, groupId: %d, deviceBan: %@", srcType, [BleUtil byte2HexStr:addr len:4], status, groupId, deviceBean);
+    
 }
 
-// 注册添加设备进程回调
-- (void)onAddProgress:(int)result{
-    NSString *info = @"";
-    NSString *value = @"0";
-    switch (result) {
-        case MESH_EVT_PROVISON_CAPABITIES:
-            info = @"Provisioning...";
-            value = @"10";
+-(void)onNameChanged:(Byte)srcType addr:(Byte *)addr status:(Byte)status name:(NSString *)name{
+    NSLog(@"onNameChanged srcType: %d, addr: %@, status: %d, name: %@", srcType, [BleUtil byte2HexStr:addr len:4], status, name);
+}
+
+-(void)onDeviceExited:(Byte)srcType addr:(Byte *)addr status:(Byte)status{
+    NSLog(@"onDeviceExited srcType: %d, addr: %@, status: %d", srcType, [BleUtil byte2HexStr:addr len:4], status);
+}
+
+-(void)onDeviceDeleted:(Byte)srcType addr:(Byte *)addr status:(Byte)status{
+    NSLog(@"onDeviceDeleted srcType: %d, addr: %@, status: %d", srcType, [BleUtil byte2HexStr:addr len:4], status);
+    [self callback:DeleteDeviceCommand response:nil];
+}
+
+-(void)onDeviceRebooted:(Byte)srcType addr:(Byte *)addr{
+    NSLog(@"onDeviceRebooted srcType: %d, addr: %@", srcType, [BleUtil byte2HexStr:addr len:4]);
+}
+
+-(void)onSceneRegStoreStatus:(Byte)srcType addr:(Byte *)addr unitIndex:(Byte)unitIndex status:(Byte)status sceneId:(Byte)sceneId{
+    NSLog(@"onSceneRecallStatus srcType: %d, addr: %@ unitIndex: %d, status: %d, sceneId: %d", srcType, [BleUtil byte2HexStr:addr len:4], unitIndex, status, sceneId);
+}
+
+-(void)onSceneRecallStatus:(Byte)srcType addr:(Byte *)addr unitIndex:(Byte)unitIndex status:(Byte)status sceneId:(Byte)sceneId{
+    NSLog(@"onSceneRecallStatus srcType: %d, addr: %@ unitIndex: %d, status: %d, sceneId: %d", srcType, [BleUtil byte2HexStr:addr len:4], unitIndex, status, sceneId);
+//    [self loadDevList];
+}
+
+-(void)on_discoverable_device_found:(TPScan *)scanDevice{
+    NSLog(@"on_discoverable_device_found: %@", scanDevice);
+    NSDictionary *response = @{@"device": scanDevice.btAddr};
+    BOOL isExit = false;
+    PLDiscoverableDev *dev = nil;
+    if(nil != scanDevice){
+        for (int i=0; i<[ScanDeviceList count]; i++) {
+            dev = [PLDiscoverableDev initWithInfo:ScanDeviceList[i]];
+            if ([dev.btAddr isEqual:scanDevice.btAddr]) {
+                isExit = true;
+            }
+        }
+        if (!isExit) {
+            [ScanDeviceList addObject:scanDevice];
+        }
+    }
+    [self keepCallback:ScanDeviceCommand response:response];
+}
+
+// 命令回调
+-(void)on_recv_mesh_data:(Byte)channel data:(NSData *)data broadcast_flag:(BOOL)broadcast_flag{
+    NSLog(@"on_recv_mesh_data channel: %x, data: %@, broadcast_flag: %d", channel, data, broadcast_flag);
+}
+
+// 添加设备回调
+-(void)on_device_add_status:(NSString *)uuid status:(int)status{
+     switch (status) {
+        case ADD_DEVICE_NONE:
+            
             break;
-        case MESH_EVT_PROVISON_DEV_KEY:
-            info = @"Provisioning...";
-            value = @"30";
+        case ADD_DEVICE_START:
+            
             break;
-        case MESH_EVT_PROVISON_COMPLETE:
-            info = @"Provision ok";
-            value = @"50";
+        case ADD_DEVICE_PROCESS:
+            
             break;
-        case MESH_EVT_PROVISON_FAIL:
-            info = @"Provision failed";
-            value = @"50";
+        case ADD_DEVICE_OK:
+            [self callback:AddDeviceCommand response:nil];
             break;
-        case MESH_EVT_CONFIG_OK:
-            info = @"Add OK";
-            value = @"100";
-            break;
-        case MESH_EVT_CONFIG_FAIL:
-            info = @"Add failed";
-             value = @"85";
-            break;
-        case MESH_EVT_COMPOS_DATA_GET:
-            info = @"Configing...";
-            value = @"75";
+        case ADD_DEVICE_FAILED:
+            
             break;
         default:
             break;
     }
-
-    NSDictionary *response = @{@"info": info, @"progress": value};
-    [self keepCallback:AddDeviceCommand response:response];
 }
 
-- (void)getDeviceList:(CDVInvokedUrlCommand*)command
+// init
+- (void)init:(CDVInvokedUrlCommand*)command
 {
-    NSString *index = [command.arguments objectAtIndex:0];
-    int n = [index intValue];
+    [[MeshService getInstance] API_register_mesh_data_callback:self];
+    [self callback:command response:nil];
+}
+
+// 扫描wifi
+- (void)scanWifi:(CDVInvokedUrlCommand*)command
+{
+    NSString* isEnable = [command argumentAtIndex:0];
+    BOOL isOK = [isEnable boolValue];
+    if (isOK) {
+        [[MeshService getInstance] API_start_scan];
+    } else {
+        [[MeshService getInstance] API_stop_scan];
+    }
+    [self callback:command response:nil];
+}
+
+// 获取wifi列表
+- (void)getWifiNetIds:(CDVInvokedUrlCommand*)command
+{
+    RegisterWifiCommand = command;
+}
+
+// 创建蓝牙网络
+- (void)createOrLoginWifi:(CDVInvokedUrlCommand*)command
+{
+    NSString* wifi = [command.arguments objectAtIndex:0];
+    NSString* password = [command.arguments objectAtIndex:1];
+    if(4 != wifi.length || 4 != password.length){
+        return;
+    }
+    
+    int rssi = [[MeshService getInstance] API_get_rssi:wifi];
+    NSString* name = [[MeshService getInstance] API_get_mesh_name:wifi];
+    [[MeshService getInstance] API_set_mesh_info:name homeId:wifi pwd:password rssi:rssi];
+    [self callback:command response:nil];
+}
+
+//获取wifi下设备列表
+- (void)getWifiDeviceList:(CDVInvokedUrlCommand*)command
+{
+    NSArray* devices = [[MeshService getInstance] API_DB_device_get_list:NO];
     NSMutableArray *deviceList = [NSMutableArray array];
-    MeshNetInfo *_mesh_net = [netWifiList objectAtIndex:n];
-    for (int i=0; i<[_mesh_net.nodes count]; i++) {
-        MeshNodeInfo *model = [MeshNodeInfo mj_objectWithKeyValues:_mesh_net.nodes[i]];
-        NSDictionary *device = @{@"name": model.name, @"uuid": model.uuid, @"version": model.version, @"addr": [NSNumber numberWithShort:model.primary_addr]};
+    for (int i=0; i<[devices count]; i++) {
+        TPDevice *deviceTmp = [devices objectAtIndex:i];
+        NSDictionary *device = @{@"btAddrStr": deviceTmp.btAddr, @"deviceName": deviceTmp.deviceName};
         [deviceList addObject:device];
     }
     [self callback:command response:@{@"deviceList": deviceList}];
 }
 
-// 解绑删除设备
-- (void)deleteDevice:(CDVInvokedUrlCommand*)command
+// 状态监听
+- (void)listenerWifiJoinStatus:(CDVInvokedUrlCommand*)command
 {
-    NSString *n = [command.arguments objectAtIndex:0];
-    short addr = [n intValue];
-    [[PLSigMeshService getInstance] resetNode:addr];
-    [self callback:command response:@{@"addr": n}];
+    ListenerWifiJoinStatusCommand = command;
 }
 
-// 强制删除设备
-- (void)forceDeleteDevice:(CDVInvokedUrlCommand*)command
+// joinMesh
+- (void)joinMesh:(CDVInvokedUrlCommand*)command
 {
-    NSString *n = [command.arguments objectAtIndex:0];
-    short addr = [n intValue];
-    [[PLSigMeshService getInstance] resetNode:addr];
+    [[MeshService getInstance] API_join_mesh];
     [self callback:command response:nil];
 }
 
-// 加入设备
-- (void)proxyJoin:(CDVInvokedUrlCommand*)command
+// exitMesh
+- (void)exitMesh:(CDVInvokedUrlCommand*)command
 {
-    [[PLSigMeshService getInstance]proxyJoin];
-    // ProxyJoinCommand = command;
+    [[MeshService getInstance] API_exit_mesh];
     [self callback:command response:nil];
 }
 
-// 退出设备
-- (void)proxyExit:(CDVInvokedUrlCommand*)command
+// pingAll
+- (void)pingMesh:(CDVInvokedUrlCommand*)command
 {
-    [[PLSigMeshService getInstance]proxyExit];
+    [[MeshService getInstance] pingAll];
     [self callback:command response:nil];
 }
 
-// 设备状态回调
--(void)onMeshStatus:(int)status addr:(NSString *)addr{
-    NSLog(@"onMeshStatus: %d", status);
-    switch (status) {
-        case PL_MESH_EXIT:
-            NSLog(@"-----------------");
-            [[PLSigMeshService getInstance]proxyJoin];
-            break;
-        case PL_MESH_JOINING:
-            // joining
-            break;
-        case PL_MESH_JOINED:
-            // join ok
-            // [self callback:ProxyJoinCommand response:nil];
-            break;
-        default:
-            break;
+// 开始扫描蓝牙设备
+- (void)scanDevice:(CDVInvokedUrlCommand*)command
+{
+    NSString* isEnable = [command argumentAtIndex:0];
+    BOOL isOK = [isEnable boolValue];
+    if (isOK) {
+        [ScanDeviceList removeAllObjects];
+        [[MeshService getInstance] API_start_scan];
+        ScanDeviceCommand = command;
+    } else {
+        [[MeshService getInstance] API_stop_scan];
+        [self callback:command response:nil];
     }
 }
 
-- (void)onLight:(CDVInvokedUrlCommand*)command
+// 删除设备
+- (void)deleteDevice:(CDVInvokedUrlCommand*)command
 {
-    NSString *n = [command.arguments objectAtIndex:0];
-    short addr = [n intValue];
-    [[PLSigMeshService getInstance] setOnoff:addr onoff:1 transitiontime:PL_DEFAULT_ONOFF_TRANSITIONTIME delay:PL_DEFAULT_ONOFF_DELAY key_index:PL_DEFAULT_APP_KEY_INDEX ack:NO];
-    [self callback:command response:nil];
+    NSString* btAddr = [command argumentAtIndex:0];
+    NSArray* devices = [[MeshService getInstance] API_DB_device_get_list:NO];
+    TPDevice* device = [self getDeviceByBtAddr:btAddr];
+    Byte vAddr[4] = {0};
+    [BleUtil int2byteArray:device.vAddr data:vAddr];
+    [[MeshService getInstance] deleteDevice:vAddr];
+    DeleteDeviceCommand = command;
 }
 
-- (void)offLight:(CDVInvokedUrlCommand*)command
+// 添加蓝牙设备到网络
+- (void)addDevice:(CDVInvokedUrlCommand*)command
 {
-    NSString *n = [command.arguments objectAtIndex:0];
-    short addr = [n intValue];
-    [[PLSigMeshService getInstance] setOnoff:addr onoff:0 transitiontime:PL_DEFAULT_ONOFF_TRANSITIONTIME delay:PL_DEFAULT_ONOFF_DELAY key_index:PL_DEFAULT_APP_KEY_INDEX ack:NO];
-    [self callback:command response:nil];
+    NSString* btAddr = [command argumentAtIndex:0];
+    for (int i=0; i<[ScanDeviceList count]; i++) {
+        PLDiscoverableDev* deviceTmp = [ScanDeviceList objectAtIndex:i];
+        if ([deviceTmp.btAddr isEqual:btAddr]) {
+            [[MeshService getInstance] API_add_device:deviceTmp.uuid];
+            AddDeviceCommand = command;
+        }
+    }
 }
 
 // 向设备发送命令
 - (void)sendCommand:(CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
-    NSString *n = [command.arguments objectAtIndex:0];
-    short addr = [n intValue];
+    NSString *btAddr = [command.arguments objectAtIndex:0];
     NSString *info = [command.arguments objectAtIndex:1];
+    TPDevice* device = [self getDeviceByBtAddr:btAddr];
     if(![info isEqual:@""]){
         NSData *temp = [BleUtil hexStringToData:info];
         Byte *data = (Byte*)[temp bytes];
-
-        [[PLSigMeshService getInstance] vendorUartSend:addr data:data len:(int)[temp length] appkeyidx:PL_DEFAULT_APP_KEY_INDEX];
+        Byte vAddr[4] = {0};
+        [BleUtil int2byteArray:device.vAddr data:vAddr];
+        [[MeshService getInstance] vendorSend:vAddr unitIndex:UNIT0 vendorOp:(short)0 data:data len:(int)temp.length];
     }
+    
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+-(TPDevice*)getDeviceByBtAddr:(NSString*)btAddr
+{
+    NSArray* devices = [[MeshService getInstance] API_DB_device_get_list:NO];
+    TPDevice* device = nil;
+    for (int i=0; i<[devices count]; i++) {
+        TPDevice* deviceTmp = [devices objectAtIndex:i];
+        if ([deviceTmp.btAddr isEqual:btAddr]) {
+            device = deviceTmp;
+        }
+    }
+    return device;
 }
 
 -(void)callback:(CDVInvokedUrlCommand *) command response:(NSDictionary *) response

@@ -7,16 +7,19 @@
 
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
-#import <pl_sigmesh/PLSigMeshService.h>
-#import <pl_sigmesh/BLEDeviceManager.h>
+#import <pl_conmesh/MeshService.h>
+#import <pl_conmesh/BleUtil.h>
+#import "PLDiscoverableDev.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface BluetoothSDK : CDVPlugin <PLSigMeshProxyCallback, PLSigMeshProvisionCallback> {
+@interface BluetoothSDK : CDVPlugin <MeshCallback> {
     CDVInvokedUrlCommand *RegisterWifiCommand;
+    CDVInvokedUrlCommand *ListenerWifiJoinStatusCommand;
+    CDVInvokedUrlCommand *ScanDeviceCommand;
     CDVInvokedUrlCommand *AddDeviceCommand;
-    CDVInvokedUrlCommand *ProxyJoinCommand;
-    NSArray *netWifiList;
+    CDVInvokedUrlCommand *DeleteDeviceCommand;
+    NSMutableArray *ScanDeviceList;
 }
 
 @end
