@@ -368,6 +368,17 @@ public class BluetoothSDK extends CordovaPlugin {
         return devices;
     }
 
+    private DeviceBean getDeviceIndexByBtAddr(String btAddr) throws JSONException {
+        List<DeviceBean> list = MeshService.getInstance().API_get_list();
+        DeviceBean device = null;
+        for (DeviceBean item : list) {
+            if (btAddr.equals(item.getBtAddrStr())) {
+                device = item;
+            }
+        }
+        return device;
+    }
+
     void requestPermission(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             cordova.getActivity()
@@ -479,8 +490,8 @@ public class BluetoothSDK extends CordovaPlugin {
 
     // 发送命令
     void sendCommand(CordovaArgs args, CallbackContext callbackContext) throws JSONException {
-        int index = args.getInt(0);
-        DeviceBean deviceBean = MeshService.getInstance().API_get_list().get(index);
+        String btAddr = args.getString(0);
+        DeviceBean deviceBean = getDeviceIndexByBtAddr(btAddr);
         byte[] target_vaddr = deviceBean.getvAddr();
         String data = args.getString(1);
         MeshService.getInstance().vendorSend(target_vaddr, 0, (short)0, Util.hexStringToBytes(data));
