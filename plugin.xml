@@ -15,6 +15,8 @@
         </config-file>
         <header-file src="src/ios/BluetoothSDK.h"/>
         <source-file src="src/ios/BluetoothSDK.m" />
+        <header-file src="src/ios/PLDiscoverableDev.h"/>
+        <source-file src="src/ios/PLDiscoverableDev.m" />
         <framework src="src/ios/lib/pl_conmesh.framework" custom="true" />
         <framework src="src/ios/lib/pl_encry_mesh.framework" custom="true" />
     </platform>
