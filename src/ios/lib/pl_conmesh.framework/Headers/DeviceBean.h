@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int vAddr;
 @property (nonatomic, assign) int unitNum;
 @property (nonatomic, strong) NSMutableArray *unitInfoList;
+@property (nonatomic, copy) NSString *meshName;
 
 +(instancetype)initWithInfo:(TPDevice *)device;
 

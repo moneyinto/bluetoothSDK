@@ -94,6 +94,19 @@ __LINE__, __func__); \
 #define ADD_DEVICE_OK		3
 #define ADD_DEVICE_FAILED	4
 
+#define MeshStatusScaning			0x0000
+#define MeshStatusConnecting		0x0001
+#define MeshStatusReconnecting		0x0002
+#define MeshStatusConnected			0x0003
+#define MeshStatusConnectionReady	0x0004
+#define MeshStatusDisconnected		0x0005
+#define MeshStatusWelcome			0x0006
+#define MeshStatusMeshChanged		0x0007
+#define MeshStatusMeshListChanged	0x0008
+#define MeshStatusWrongPwd			0x0009
+#define MeshStatusAlreadyConnected  0x000a
+#define MeshStatusPeripheral 		0x000b
+	
 typedef NS_ENUM(NSInteger, LIB_TYPE){
     LIB_DIRECT_TRANSMIT = 0,
     LIB_ODELIC,//节点变化时,主动发送ping all命令
@@ -194,6 +207,7 @@ typedef NS_ENUM(NSInteger, TABLE_TYPE){
 -(void)on_discoverable_device_found:(TPScan *)scanDevice;
 -(void)get_homeid_pwd:(NSString *)homeId pwd:(NSString *)pwd;
 -(void)on_device_add_status:(NSString *)uuid status:(int)status;
+-(void)on_mesh_status_changed:(NSString *)uuid status:(int)status;
 
 // model callbak
 -(void)onOnoffStatus:(Byte) srcType addr:(Byte *) addr unitIndex:(Byte) unitIndex onoff:(Byte) onoff;
@@ -206,7 +220,8 @@ typedef NS_ENUM(NSInteger, TABLE_TYPE){
 -(void)onDeviceExited:(Byte) srcType addr:(Byte *) addr status:(Byte) status;
 -(void)onDeviceDeleted:(Byte) srcType addr:(Byte *) addr status:(Byte) status;
 -(void)onDeviceRebooted:(Byte) srcType addr:(Byte *) addr;
--(void)onNameChanged:(Byte) srcType addr:(Byte *) addr status:(Byte) status name:(NSString *)name;
+-(void)onMeshNameChanged:(Byte) srcType addr:(Byte *) addr status:(Byte) status name:(NSString *)name;
+-(void)onDeviceNameChanged:(Byte) srcType addr:(Byte *) addr status:(Byte) status name:(NSString *)name;
 
 @end
 
@@ -248,10 +263,20 @@ typedef NS_ENUM(NSInteger, TABLE_TYPE){
 -(int) onoffSet:(Byte *) targetVaddr unitIndex:(int) unitIndex onoff:(BOOL) onoff ackType:(Byte) ackType;
 -(int) onoffSetGroup:(Byte) groupId onoff:(BOOL) onoff ackType:(Byte) ackType;
 -(int) onoffSetAll:(BOOL) onoff ackType:(Byte) ackType;
+-(int) onoffBtAddrSet:(Byte *) btAddr unitIndex:(int) unitIndex onoff:(BOOL) onoff ackType:(Byte) ackType;
+-(int) onoffToggle:(Byte *) targetVaddr unitIndex:(int) unitIndex ackType:(Byte) ackType;
+-(int) onoffToggleGroup:(Byte) groupId ackType:(Byte) ackType;
+-(int) onoffToggleAll:(Byte) ackType;
 -(int) levelSet:(Byte *) targetVaddr unitIndex:(int) unitIndex level:(short) level ackType:(Byte) ackType;
 -(int) levelSetGroup:(Byte) groupId level:(short) level ackType:(Byte) ackType;
 -(int) levelSetAll:(short) level ackType:(Byte) ackType;
--(int) onoffBtAddrSet:(Byte *) btAddr unitIndex:(int) unitIndex onoff:(BOOL) onoff ackType:(Byte) ackType;
+-(int) levelDeltaSet:(Byte *) targetVaddr unitIndex:(int) unitIndex level:(int) level ackType:(Byte) ackType;
+-(int) ctlSet:(Byte *) targetVaddr unitIndex:(int) unitIndex lightness:(short) lightness temperature:(short) temperature deltaUv:(short) deltaUv ackType:(Byte) ackType;
+-(int) ctlSetGroup:(Byte) groupId lightness:(short) lightness temperature:(short) temperature deltaUv:(short) deltaUv ackType:(Byte) ackType;
+-(int) ctlSetAll:(short) lightness temperature:(short) temperature deltaUv:(short) deltaUv ackType:(Byte) ackType;
+-(int) hslSet:(Byte *) targetVaddr unitIndex:(int) unitIndex lightness:(short) lightness hue:(short) hue saturation:(short) saturation ackType:(Byte) ackType;
+-(int) hslSetGroup:(Byte) groupId lightness:(short) lightness hue:(short) hue saturation:(short) saturation  ackType:(Byte) ackType;
+-(int) hslSetAll:(short) lightness hue:(short) hue saturation:(short) saturation ackType:(Byte) ackType;
 -(int) vendorSend:(Byte*) targetVaddr unitIndex:(int) unitIndex vendorOp:(short) vendorOp data:(Byte *) data len:(int)len;
 -(int) vendorSendGroup:(Byte) groupId vendorOp:(short) vendorOp data:(Byte *) data len:(int)len;
 -(int) vendorSendAll:(short) vendorOp data:(Byte *) data len:(int)len;
@@ -272,10 +297,14 @@ typedef NS_ENUM(NSInteger, TABLE_TYPE){
 -(BOOL)API_send_btmac_profile_data:(Byte *)btAddr data:(Byte *)data len:(short) len;
 -(int) addGroups:(Byte*) targetVaddr unitIndex:(int) unitIndex groupId:(int) groupId ackType:(Byte) ackType;
 -(int) delGroups:(Byte*) targetVaddr unitIndex:(int) unitIndex groupId:(int) groupId ackType:(Byte) ackType;
--(int) nameSet:(Byte *) targetVaddr data:(Byte *) data len:(int)len ackType:(Byte) ackType;
--(int) nameSetAll:(Byte *) data len:(int)len ackType:(Byte) ackType;
--(int) nameSetGroup:(Byte) groupId data:(Byte *) data len:(int)len ackType:(Byte) ackType;
--(int) nameGet:(Byte *) targetVaddr;
+-(int) meshNameSet:(Byte *) targetVaddr data:(Byte *) data len:(int)len ackType:(Byte) ackType;
+-(int) meshNameSetAll:(Byte *) data len:(int)len ackType:(Byte) ackType;
+-(int) meshNameSetGroup:(Byte) groupId data:(Byte *) data len:(int)len ackType:(Byte) ackType;
+-(int) meshNameGet:(Byte *) targetVaddr;
+-(int) deviceNameSet:(Byte *) targetVaddr data:(Byte *) data len:(int)len ackType:(Byte) ackType;
+-(int) deviceNameSetAll:(Byte *) data len:(int)len ackType:(Byte) ackType;
+-(int) deviceNameSetGroup:(Byte) groupId data:(Byte *) data len:(int)len ackType:(Byte) ackType;
+-(int) deviceNameGet:(Byte *) targetVaddr;
 
 #pragma mark - **************** other API
 
@@ -327,7 +356,7 @@ typedef NS_ENUM(NSInteger, TABLE_TYPE){
 -(NSArray *)API_DB_device_get_list_in_product:(int)companyId productId:(int)productId;
 -(NSArray *)API_DB_device_get_target:(NSString *)btAddr;
 -(NSArray *)API_DB_device_get_list:(BOOL)singleCtl;
-
+-(void)API_DB_device_update_name:(NSString*)btAddr name:(NSString*)name;
 
 -(BOOL)API_set_lib_type:(LIB_TYPE)type;
 -(LIB_TYPE)API_get_lib_type;

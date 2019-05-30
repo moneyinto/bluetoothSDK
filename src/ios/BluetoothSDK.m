@@ -26,7 +26,11 @@
     for (int i=0; i<[wifiList count]; i++) {
         TPMesh* wifi = [wifiList objectAtIndex:i];
         if (wifi.homeId == homeId) {
-            NSDictionary *response = @{@"wifiId": homeId, @"wifiName": wifi.meshName};
+            NSString *meshName = @"";
+            if([wifi.meshName containsString:@"m_"]){
+                meshName = [wifi.meshName substringFromIndex:2];
+            }
+            NSDictionary *response = @{@"wifiId": homeId, @"wifiName": meshName};
             [self keepCallback:RegisterWifiCommand response:response];
         }
     }
@@ -50,6 +54,23 @@
         response = @{@"status": @5};
     }
     [self keepCallback:ListenerWifiJoinStatusCommand response:response];
+}
+
+-(void)on_mesh_status_changed:(NSString *)uuid status:(int)status{
+    NSDictionary *response = nil;
+    switch (status) {
+        case MeshStatusWrongPwd:
+            response = @{@"status": @9};
+            NSLog(@"mesh status: password wrong");
+            break;
+        case MeshStatusWelcome:
+            response = @{@"status": @6};
+            NSLog(@"mesh status: welcome");
+            break;
+        default:
+            break;
+    }
+    [self keepCallback:ListenerWifiJoinStatusCommand response: response];
 }
 
 -(void)on_update_device_list{
@@ -186,7 +207,9 @@
     NSMutableArray *deviceList = [NSMutableArray array];
     for (int i=0; i<[devices count]; i++) {
         TPDevice *deviceTmp = [devices objectAtIndex:i];
-        NSDictionary *device = @{@"btAddrStr": deviceTmp.btAddr, @"deviceName": deviceTmp.deviceName};
+        NSString *nameTmp = deviceTmp.deviceName;
+        if (nameTmp == nil) nameTmp = @"";
+        NSDictionary *device = @{@"btAddrStr": deviceTmp.btAddr, @"deviceName": nameTmp};
         [deviceList addObject:device];
     }
     [self callback:command response:@{@"deviceList": deviceList}];
@@ -238,7 +261,6 @@
 - (void)deleteDevice:(CDVInvokedUrlCommand*)command
 {
     NSString* btAddr = [command argumentAtIndex:0];
-    NSArray* devices = [[MeshService getInstance] API_DB_device_get_list:NO];
     TPDevice* device = [self getDeviceByBtAddr:btAddr];
     Byte vAddr[4] = {0};
     [BleUtil int2byteArray:device.vAddr data:vAddr];
@@ -274,6 +296,22 @@
         [[MeshService getInstance] vendorSend:vAddr unitIndex:UNIT0 vendorOp:(short)0 data:data len:(int)temp.length];
     }
     
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)rename:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+    NSString *btAddr = [command.arguments objectAtIndex:0];
+    NSString *name = [command.arguments objectAtIndex:1];
+    TPDevice* device = [self getDeviceByBtAddr:btAddr];
+    NSString* tempName = [@"m_" stringByAppendingString:name];
+    NSData* tmpData = [tempName dataUsingEncoding:NSUTF8StringEncoding];
+    Byte *data = (Byte *)[tmpData bytes];
+    Byte vAddr[4] = {0};
+    [BleUtil int2byteArray:device.vAddr data:vAddr];
+//    [[MeshService getInstance] nameSet:vAddr data:data len:(int)tmpData.length ackType:ACK_TYPE_REMOTE];
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }

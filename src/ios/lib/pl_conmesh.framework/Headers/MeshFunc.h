@@ -35,9 +35,17 @@
 -(short)unitListToMask:(NSArray *)unitList;
 -(void)onoffSet:(Byte*)targetVaddr unitMask:(short)unitMask onoff:(Byte)onoff ackType:(Byte)ackType isMac:(BOOL)isMac;
 -(void)onoffSetGroup:(Byte)groupId onoff:(Byte)onoff ackType:(Byte)ackType;
+-(void)onoffToggle:(Byte*)targetVaddr unitMask:(short)unitMask ackType:(Byte) ackType isMac:(BOOL) isMac;
+-(void)onoffToggleGroup:(Byte) groupId ackType:(Byte) ackType;
 
 -(void)levelSet:(Byte *)targetVaddr unitMask:(short)unitMask level:(short)level ackType:(Byte) ackType;
 -(void)levelSetGroup:(Byte)groupId level:(short)level ackType:(Byte) ackType;
+-(void)levelDeltaSet:(Byte *)targetVaddr unitMask:(short)unitMask deltaLevel:(int) deltaLevel ackType:(Byte) ackType;
+
+-(void)ctlSet:(Byte *)targetVaddr unitMask:(short)unitMask lightness:(short) lightness temperature:(short) temperature deltaUv:(short) deltaUv ackType:(Byte) ackType;
+-(void)ctlSetGroup:(Byte) groupId lightness:(short) lightness temperature:(short) temperature deltaUv:(short) deltaUv ackType:(Byte) ackType;
+-(void)hslSet:(Byte *)targetVaddr unitMask:(short)unitMask lightness:(short) lightness hue:(short) hue  saturation:(short) saturation ackType:(Byte) ackType;
+-(void)hslSetGroup:(Byte) groupId lightness:(short) lightness hue:(short) hue saturation:(short) saturation ackType:(Byte) ackType;
 
 -(void)exitDevice:(Byte *)targetVaddr;
 -(void)deleteDevice:(Byte *)targetVaddr;
@@ -60,11 +68,13 @@
 //-(void) FuncMsgHandler:(PacketSource *) src dataOffset:(short) dataOffset data:(Byte *) data len:(Byte) len;
 -(void) FuncDataHandler:(Byte * )data len:(Byte) len;
 -(void) ping:(Byte*)targetVaddr isMac:(BOOL)isMac;
--(void) nameSet:(Byte *) targetVaddr data:(Byte *) data len:(short) len ackType:(Byte) ackType isMac:(BOOL) isMac;
--(void) nameSetGroup:(Byte) groupId data:(Byte *) data len:(short) len ackType:(Byte) ackType;
--(void) nameGet:(Byte *) targetVaddr isMac:(BOOL) isMac;
-
+-(void) meshNameSet:(Byte *) targetVaddr data:(Byte *) data len:(short) len ackType:(Byte) ackType isMac:(BOOL) isMac;
+-(void) meshNameSetGroup:(Byte) groupId data:(Byte *) data len:(short) len ackType:(Byte) ackType;
+-(void) meshNameGet:(Byte *) targetVaddr isMac:(BOOL) isMac;
 -(NSMutableArray *)getUnitInfoList:(NSString *)btAddr;
+-(void) deviceNameSet:(Byte *) targetVaddr data:(Byte *) data len:(short) len ackType:(Byte) ackType  isMac:(BOOL) isMac;
+-(void) deviceNameSetGroup:(Byte) groupId data:(Byte *) data  len:(short) len ackType:(Byte) ackType;
+-(void) deviceNameGet:(Byte*) targetVaddr isMac:(BOOL) isMac;
 
 @end
 
